@@ -1,0 +1,55 @@
+<div class="container my-5">
+  <h2 class="mb-4 text-center">Gestión de Usuarios</h2>
+  <!-- Formulario para agregar usuario -->
+  <div class="card mb-4">
+    <div class="card-header">Registrar nuevo usuario</div>
+    <div class="card-body">
+      <form>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" placeholder="Nombre del usuario">
+          </div>
+          <div class="col-md-4">
+            <label for="correo" class="form-label">Correo</label>
+            <input type="email" class="form-control" id="correo" placeholder="Correo electrónico">
+          </div>
+          <div class="col-md-4">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" placeholder="Teléfono">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success">Registrar usuario</button>
+      </form>
+    </div>
+  </div>
+  <!-- Tabla de usuarios -->
+  <div class="card">
+    <div class="card-header">Listado de usuarios</div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>María López</td>
+            <td>maria@email.com</td>
+            <td>987654321</td>
+            <td>
+              <button class="btn btn-warning btn-sm me-1">Editar</button>
+              <button class="btn btn-danger btn-sm">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

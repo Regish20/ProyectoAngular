@@ -1,0 +1,55 @@
+<div class="container my-5">
+  <h2 class="mb-4 text-center">Gestión de Productos</h2>
+  <div class="card mb-4">
+    <div class="card-header">Registrar nuevo producto</div>
+    <div class="card-body">
+      <form>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" placeholder="Nombre del producto">
+          </div>
+          <div class="col-md-4">
+            <label for="precio" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="precio" min="0" placeholder="Precio">
+          </div>
+          <div class="col-md-4">
+            <label for="stock" class="form-label">Stock</label>
+            <input type="number" class="form-control" id="stock" min="0" placeholder="Stock disponible">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea class="form-control" id="descripcion" rows="2" placeholder="Descripción del producto"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Registrar producto</button>
+      </form>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">Listado de productos</div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Celular Y</td>
+            <td>S/ 800</td>
+            <td>15</td>
+            <td>Smartphone gama media</td>
+            <td>
+              <button class="btn btn-warning btn-sm me-1">Editar</button>
+              <button class="btn btn-danger btn-sm">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>

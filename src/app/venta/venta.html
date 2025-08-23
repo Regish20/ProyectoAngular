@@ -1,0 +1,56 @@
+<div class="container my-5">
+  <h2 class="mb-4 text-center">Gestión de Ventas</h2>
+  <div class="card mb-4">
+    <div class="card-header">Registrar nueva venta</div>
+    <div class="card-body">
+      <form>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="cliente" class="form-label">Cliente</label>
+            <input type="text" class="form-control" id="cliente" placeholder="Nombre del cliente">
+          </div>
+          <div class="col-md-4">
+            <label for="producto" class="form-label">Producto</label>
+            <input type="text" class="form-control" id="producto" placeholder="Producto vendido">
+          </div>
+          <div class="col-md-2">
+            <label for="cantidad" class="form-label">Cantidad</label>
+            <input type="number" class="form-control" id="cantidad" min="1" placeholder="Cantidad">
+          </div>
+          <div class="col-md-2">
+            <label for="total" class="form-label">Total</label>
+            <input type="number" class="form-control" id="total" min="0" placeholder="Total">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success">Registrar venta</button>
+      </form>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">Listado de ventas</div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Juan Pérez</td>
+            <td>Celular X</td>
+            <td>2</td>
+            <td>S/ 1200</td>
+            <td>23/08/2025</td>
+            <td>
+              <button class="btn btn-warning btn-sm me-1">Editar</button>
+              <button class="btn btn-danger btn-sm">Eliminar</button>
+            </td>
+          </tr>
