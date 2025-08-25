@@ -1,56 +1,52 @@
 <div class="container my-5">
   <h2 class="mb-4 text-center">Gestión de Ventas</h2>
+  <!-- Formulario para agregar venta -->
   <div class="card mb-4">
     <div class="card-header">Registrar nueva venta</div>
     <div class="card-body">
-      <form>
+      <form id="formVenta" (submit)="onSubmit($event)">
         <div class="row mb-3">
-          <div class="col-md-4">
-            <label for="cliente" class="form-label">Cliente</label>
-            <input type="text" class="form-control" id="cliente" placeholder="Nombre del cliente">
+          <div class="col-md-12">
+            <label for="id_cliente" class="form-label">ID Cliente</label>
+            <input type="number" class="form-control" id="id_cliente" name="id_cliente" placeholder="ID del cliente" required>
           </div>
-          <div class="col-md-4">
-            <label for="producto" class="form-label">Producto</label>
-            <input type="text" class="form-control" id="producto" placeholder="Producto vendido">
-          </div>
-          <div class="col-md-2">
-            <label for="cantidad" class="form-label">Cantidad</label>
-            <input type="number" class="form-control" id="cantidad" min="1" placeholder="Cantidad">
-          </div>
-          <div class="col-md-2">
-            <label for="total" class="form-label">Total</label>
-            <input type="number" class="form-control" id="total" min="0" placeholder="Total">
+          <div class="mb-3">
+            <label for="fecha" class="form-label">Fecha</label>
+            <input type="date" id="fecha" class="form-control" required />
           </div>
         </div>
-        <button type="submit" class="btn btn-success">Registrar venta</button>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">Registrar venta</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelar" 
+                  (click)="limpiarFormulario()" style="display: none;">Cancelar</button>
+        </div>
       </form>
     </div>
   </div>
+  <!-- Tabla de ventas -->
   <div class="card">
     <div class="card-header">Listado de ventas</div>
     <div class="card-body">
+      <div id="loading" class="text-center" style="display: none;">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
       <table class="table table-bordered table-hover">
         <thead class="table-dark">
           <tr>
             <th>#</th>
-            <th>Cliente</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Total</th>
+            <th>ID Cliente</th>
             <th>Fecha</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>1</td>
-            <td>Juan Pérez</td>
-            <td>Celular X</td>
-            <td>2</td>
-            <td>S/ 1200</td>
-            <td>23/08/2025</td>
-            <td>
-              <button class="btn btn-warning btn-sm me-1">Editar</button>
-              <button class="btn btn-danger btn-sm">Eliminar</button>
-            </td>
+            <td colspan="4" class="text-center">Cargando datos...</td>
           </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
