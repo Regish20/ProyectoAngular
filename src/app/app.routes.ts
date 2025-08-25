@@ -5,6 +5,7 @@ import { Productos } from './productos/productos';
 import { Usuarios } from './usuarios/usuarios';
 
 export const routes: Routes = [
+  { path: '', redirectTo: '/inicio', pathMatch: 'full' },
   { path: 'inicio', component: Inicio },
   { path: 'venta', component: Venta },
   { path: 'productos', component: Productos },

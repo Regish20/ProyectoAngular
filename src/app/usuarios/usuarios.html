@@ -4,22 +4,26 @@
   <div class="card mb-4">
     <div class="card-header">Registrar nuevo usuario</div>
     <div class="card-body">
-      <form>
+      <form id="formUsuario" (submit)="onSubmit($event)">
         <div class="row mb-3">
           <div class="col-md-4">
             <label for="nombre" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="nombre" placeholder="Nombre del usuario">
+            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del usuario" required>
           </div>
           <div class="col-md-4">
             <label for="correo" class="form-label">Correo</label>
-            <input type="email" class="form-control" id="correo" placeholder="Correo electrónico">
+            <input type="email" class="form-control" id="correo" name="correo" placeholder="Correo electrónico" required>
           </div>
           <div class="col-md-4">
             <label for="telefono" class="form-label">Teléfono</label>
-            <input type="text" class="form-control" id="telefono" placeholder="Teléfono">
+            <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="Teléfono" required>
           </div>
         </div>
-        <button type="submit" class="btn btn-success">Registrar usuario</button>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">Registrar usuario</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelar" 
+                  (click)="limpiarFormulario()" style="display: none;">Cancelar</button>
+        </div>
       </form>
     </div>
   </div>
@@ -27,6 +31,11 @@
   <div class="card">
     <div class="card-header">Listado de usuarios</div>
     <div class="card-body">
+      <div id="loading" class="text-center" style="display: none;">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
       <table class="table table-bordered table-hover">
         <thead class="table-dark">
           <tr>
@@ -39,17 +48,11 @@
         </thead>
         <tbody>
           <tr>
-            <td>1</td>
-            <td>María López</td>
-            <td>maria@email.com</td>
-            <td>987654321</td>
-            <td>
-              <button class="btn btn-warning btn-sm me-1">Editar</button>
-              <button class="btn btn-danger btn-sm">Eliminar</button>
-            </td>
+            <td colspan="5" class="text-center">Cargando datos...</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+<script src="usuarios.js"></script>
