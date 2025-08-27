@@ -1,17 +1,10 @@
-
 <?php
-/**
- * @fileoverview API for managing sales (Venta) data.
- * This script handles GET, POST, PUT, and DELETE requests to interact with the 'venta' table.
- * It includes a new 'fecha' field for the sale date.
- */
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-// Handle pre-flight OPTIONS requests
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -29,8 +22,15 @@ if ($conn->connect_error) {
 // Process the request based on the HTTP method
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        // Fetch all sales, ordered by sale ID
-        $resultado = $conn->query("SELECT * FROM venta ORDER BY id_venta ASC");
+        // Verificar si la columna estado existe
+        $check_column = $conn->query("SHOW COLUMNS FROM venta LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            // Solo mostrar ventas activas (estado = true)
+            $resultado = $conn->query("SELECT * FROM venta WHERE estado = true ORDER BY id_venta ASC");
+        } else {
+            // Si no existe la columna estado, mostrar todas
+            $resultado = $conn->query("SELECT * FROM venta ORDER BY id_venta ASC");
+        }
         if (!$resultado) {
             echo json_encode(["error" => "Error en consulta: " . $conn->error]);
             break;
@@ -55,9 +55,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
         
         $id_cliente = intval($data['id_cliente']);
         $fecha = $conn->real_escape_string($data['fecha']);
-
-        // Insert new sale into the database
-        $sql = "INSERT INTO venta (id_cliente, fecha) VALUES ($id_cliente, '$fecha')";
+        
+        // Verificar si la columna estado existe
+        $check_column = $conn->query("SHOW COLUMNS FROM venta LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
+            $sql = "INSERT INTO venta (id_cliente, fecha, estado) VALUES ($id_cliente, '$fecha', $estado)";
+        } else {
+            $sql = "INSERT INTO venta (id_cliente, fecha) VALUES ($id_cliente, '$fecha')";
+        }
         
         if ($conn->query($sql)) {
             echo json_encode(["success" => true, "id" => $conn->insert_id]);
@@ -80,9 +86,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $id = intval($data['id_venta']);
         $id_cliente = intval($data['id_cliente']);
         $fecha = $conn->real_escape_string($data['fecha']);
-
-        // Update sale data in the database
-        $sql = "UPDATE venta SET id_cliente=$id_cliente, fecha='$fecha' WHERE id_venta=$id";
+        
+        // Verificar si la columna estado existe
+        $check_column = $conn->query("SHOW COLUMNS FROM venta LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
+            $sql = "UPDATE venta SET id_cliente=$id_cliente, fecha='$fecha', estado=$estado WHERE id_venta=$id";
+        } else {
+            $sql = "UPDATE venta SET id_cliente=$id_cliente, fecha='$fecha' WHERE id_venta=$id";
+        }
         
         if ($conn->query($sql)) {
             echo json_encode(["success" => true]);
@@ -109,8 +121,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
             break;
         }
         
-        // Delete sale from the database
-        $sql = "DELETE FROM venta WHERE id_venta=$id";
+        // Verificar si la columna estado existe para hacer eliminación lógica
+        $check_column = $conn->query("SHOW COLUMNS FROM venta LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            // Eliminación lógica: cambiar estado a false
+            $sql = "UPDATE venta SET estado = false WHERE id_venta=$id";
+        } else {
+            // Eliminación física si no existe la columna estado
+            $sql = "DELETE FROM venta WHERE id_venta=$id";
+        }
         
         if ($conn->query($sql)) {
             if ($conn->affected_rows > 0) {

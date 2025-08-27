@@ -6,13 +6,21 @@
     <div class="card-body">
       <form id="formVenta" (submit)="onSubmit($event)">
         <div class="row mb-3">
-          <div class="col-md-12">
+          <div class="col-md-3">
             <label for="id_cliente" class="form-label">ID Cliente</label>
             <input type="number" class="form-control" id="id_cliente" name="id_cliente" placeholder="ID del cliente" required>
           </div>
-          <div class="mb-3">
+          <div class="col-md-3">
             <label for="fecha" class="form-label">Fecha</label>
-            <input type="date" id="fecha" class="form-control" required />
+            <input type="date" id="fecha" name="fecha" class="form-control" required />
+          </div>
+          <div class="col-md-3">
+            <label for="estado" class="form-label">Estado</label>
+            <select class="form-control" id="estado" name="estado" required>
+              <option value="">Seleccione un estado</option>
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
           </div>
         </div>
         <div class="d-flex gap-2">
@@ -38,12 +46,13 @@
             <th>#</th>
             <th>ID Cliente</th>
             <th>Fecha</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td colspan="4" class="text-center">Cargando datos...</td>
+            <td colspan="5" class="text-center">Cargando datos...</td>
           </tr>
         </tbody>
       </table>
