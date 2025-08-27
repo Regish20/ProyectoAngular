@@ -7,12 +7,14 @@ interface Producto {
   stock: number;
   id_marca: number;
   descripcion?: string;
+  estado: boolean;
   nombre_marca?: string; // Para mostrar el nombre de la marca en la tabla
 }
 
 interface Marca {
   id_marca: number;
   nombre_marca: string;
+  estado: boolean;
 }
 
 interface ApiResponse {
@@ -41,7 +43,6 @@ export class Productos implements OnInit {
     this.cargarMarcas();
   }
 
-  // ==================== MÉTODOS PARA PRODUCTOS ====================
   async cargarProductos(): Promise<void> {
     try {
       const respuesta = await fetch(this.API_URL_PRODUCTOS);
@@ -71,6 +72,7 @@ export class Productos implements OnInit {
             <td>$${parseFloat(producto.precio.toString()).toFixed(2)}</td>
             <td>${producto.stock}</td>
             <td>${producto.nombre_marca || 'Sin marca'}</td>
+            <td><span class="badge ${producto.estado ? 'bg-success' : 'bg-danger'}">${producto.estado ? 'Activo' : 'Inactivo'}</span></td>
             <td>${producto.descripcion || 'Sin descripción'}</td>
             <td>
               <button class="btn btn-warning btn-sm me-1" onclick="editarProductoGlobal(${producto.id_producto})">Editar</button>
@@ -80,10 +82,9 @@ export class Productos implements OnInit {
         `;
       });
     } else {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay productos</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay productos</td></tr>';
     }
 
-    // Asignar las funciones globales
     (window as any).editarProductoGlobal = (id: number) => {
       console.log('=== FUNCIÓN GLOBAL EDITARPRODUCTO LLAMADA ===');
       console.log('ID recibido en función global:', id, typeof id);
@@ -97,14 +98,14 @@ export class Productos implements OnInit {
   async onSubmitProducto(event: Event): Promise<void> {
     event.preventDefault();
     
-    // Obtener valores directamente de los inputs
     const nombre = (document.getElementById('nombre') as HTMLInputElement).value.trim();
     const precio = parseFloat((document.getElementById('precio') as HTMLInputElement).value);
     const stock = parseInt((document.getElementById('stock') as HTMLInputElement).value);
     const id_marca = parseInt((document.getElementById('id_marca') as HTMLSelectElement).value);
+    const estado = (document.getElementById('estado') as HTMLSelectElement).value;
     const descripcion = (document.getElementById('descripcion') as HTMLTextAreaElement).value.trim();
     
-    if (!nombre || isNaN(precio) || isNaN(stock) || !id_marca) {
+    if (!nombre || isNaN(precio) || isNaN(stock) || !id_marca || !estado) {
       alert('Todos los campos son obligatorios');
       return;
     }
@@ -114,6 +115,7 @@ export class Productos implements OnInit {
       precio,
       stock,
       id_marca,
+      estado,
       descripcion,
       ...(this.editandoIdProducto && { id_producto: this.editandoIdProducto })
     };
@@ -161,6 +163,7 @@ export class Productos implements OnInit {
       (document.getElementById('precio') as HTMLInputElement).value = producto.precio.toString();
       (document.getElementById('stock') as HTMLInputElement).value = producto.stock.toString();
       (document.getElementById('id_marca') as HTMLSelectElement).value = producto.id_marca.toString();
+      (document.getElementById('estado') as HTMLSelectElement).value = producto.estado.toString();
       (document.getElementById('descripcion') as HTMLTextAreaElement).value = producto.descripcion || '';
       
       // Cambiar textos del formulario
@@ -170,7 +173,7 @@ export class Productos implements OnInit {
       
       if (submitBtn) submitBtn.textContent = 'Actualizar producto';
       if (cardHeaders && cardHeaders.length > 0) {
-        (cardHeaders[1] as HTMLElement).textContent = 'Editar producto'; // Segunda card-header
+        (cardHeaders[0] as HTMLElement).textContent = 'Editar producto';
       }
       if (cancelBtn) cancelBtn.style.display = 'inline-block';
       
@@ -209,7 +212,7 @@ export class Productos implements OnInit {
     (document.querySelector('#formProducto button[type="submit"]') as HTMLElement).textContent = 'Registrar producto';
     const cardHeaders = document.querySelectorAll('.card-header');
     if (cardHeaders && cardHeaders.length > 0) {
-      (cardHeaders[1] as HTMLElement).textContent = 'Registrar nuevo producto';
+      (cardHeaders[0] as HTMLElement).textContent = 'Registrar nuevo producto';
     }
     (document.getElementById('btnCancelarProducto') as HTMLElement).style.display = 'none';
     this.editandoIdProducto = null;
@@ -218,7 +221,7 @@ export class Productos implements OnInit {
   private mostrarErrorProductos(mensaje: string): void {
     const tbody = document.querySelector('#tablaProductos tbody') as HTMLElement;
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">${mensaje}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">${mensaje}</td></tr>`;
     }
   }
 
@@ -250,6 +253,7 @@ export class Productos implements OnInit {
           <tr>
             <td>${marca.id_marca}</td>
             <td>${marca.nombre_marca}</td>
+            <td><span class="badge ${marca.estado ? 'bg-success' : 'bg-danger'}">${marca.estado ? 'Activo' : 'Inactivo'}</span></td>
             <td>
               <button class="btn btn-warning btn-sm me-1" onclick="editarMarcaGlobal(${marca.id_marca})">Editar</button>
               <button class="btn btn-danger btn-sm" onclick="eliminarMarcaGlobal(${marca.id_marca})">Eliminar</button>
@@ -258,10 +262,9 @@ export class Productos implements OnInit {
         `;
       });
     } else {
-      tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay marcas</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay marcas</td></tr>';
     }
 
-    // Asignar las funciones globales
     (window as any).editarMarcaGlobal = (id: number) => {
       console.log('=== FUNCIÓN GLOBAL EDITARMARCA LLAMADA ===');
       console.log('ID recibido en función global:', id, typeof id);
@@ -276,7 +279,6 @@ export class Productos implements OnInit {
     const selectMarca = document.getElementById('id_marca') as HTMLSelectElement;
     if (!selectMarca) return;
 
-    // Limpiar opciones existentes excepto la primera
     selectMarca.innerHTML = '<option value="">Seleccione una marca</option>';
     
     // Agregar opciones de marcas
@@ -293,14 +295,16 @@ export class Productos implements OnInit {
     
     // Obtener valores directamente de los inputs
     const nombre_marca = (document.getElementById('nombre_marca') as HTMLInputElement).value.trim();
+    const estado = (document.getElementById('estado_marca') as HTMLSelectElement).value;
     
-    if (!nombre_marca) {
-      alert('El nombre de la marca es obligatorio');
+    if (!nombre_marca || !estado) {
+      alert('El nombre de la marca y el estado son obligatorios');
       return;
     }
     
     const datos = {
       nombre_marca,
+      estado,
       ...(this.editandoIdMarca && { id_marca: this.editandoIdMarca })
     };
 
@@ -344,6 +348,7 @@ export class Productos implements OnInit {
     if (marca) {
       // Llenar los campos del formulario
       (document.getElementById('nombre_marca') as HTMLInputElement).value = marca.nombre_marca;
+      (document.getElementById('estado_marca') as HTMLSelectElement).value = marca.estado.toString();
       
       // Cambiar textos del formulario
       const submitBtn = document.querySelector('#formMarca button[type="submit"]') as HTMLElement;
@@ -352,7 +357,7 @@ export class Productos implements OnInit {
       
       if (submitBtn) submitBtn.textContent = 'Actualizar marca';
       if (cardHeaders && cardHeaders.length > 2) {
-        (cardHeaders[2] as HTMLElement).textContent = 'Editar marca'; // Tercera card-header
+        (cardHeaders[2] as HTMLElement).textContent = 'Editar marca';
       }
       if (cancelBtn) cancelBtn.style.display = 'inline-block';
       
@@ -401,7 +406,7 @@ export class Productos implements OnInit {
   private mostrarErrorMarcas(mensaje: string): void {
     const tbody = document.querySelector('#tablaMarcas tbody') as HTMLElement;
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger">${mensaje}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">${mensaje}</td></tr>`;
     }
   }
 }

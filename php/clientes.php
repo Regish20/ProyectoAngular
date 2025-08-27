@@ -18,7 +18,15 @@ if ($conn->connect_error) {
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        $resultado = $conn->query("SELECT * FROM clientes ORDER BY id_cliente ASC");
+        // Verificar si la columna estado existe
+        $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            // Solo mostrar clientes activos (estado = true)
+            $resultado = $conn->query("SELECT * FROM clientes WHERE estado = true ORDER BY id_cliente ASC");
+        } else {
+            // Si no existe la columna estado, mostrar todos
+            $resultado = $conn->query("SELECT * FROM clientes ORDER BY id_cliente ASC");
+        }
         if (!$resultado) {
             echo json_encode(["error" => "Error en consulta: " . $conn->error]);
             break;
@@ -42,8 +50,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $nombre = $conn->real_escape_string(trim($data['nombre']));
         $correo = $conn->real_escape_string(trim($data['correo']));
         $telefono = $conn->real_escape_string(trim($data['telefono']));
-
-        $sql = "INSERT INTO clientes (nombre, correo, telefono) VALUES ('$nombre', '$correo', '$telefono')";
+        
+        // Verificar si la columna estado existe
+        $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
+            $sql = "INSERT INTO clientes (nombre, correo, telefono, estado) VALUES ('$nombre', '$correo', '$telefono', $estado)";
+        } else {
+            $sql = "INSERT INTO clientes (nombre, correo, telefono) VALUES ('$nombre', '$correo', '$telefono')";
+        }
         
         if ($conn->query($sql)) {
             echo json_encode(["success" => true, "id" => $conn->insert_id]);
@@ -65,8 +80,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $nombre = $conn->real_escape_string(trim($data['nombre']));
         $correo = $conn->real_escape_string(trim($data['correo']));
         $telefono = $conn->real_escape_string(trim($data['telefono']));
-
-        $sql = "UPDATE clientes SET nombre='$nombre', correo='$correo', telefono='$telefono' WHERE id_cliente=$id";
+        
+        // Verificar si la columna estado existe
+        $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
+            $sql = "UPDATE clientes SET nombre='$nombre', correo='$correo', telefono='$telefono', estado=$estado WHERE id_cliente=$id";
+        } else {
+            $sql = "UPDATE clientes SET nombre='$nombre', correo='$correo', telefono='$telefono' WHERE id_cliente=$id";
+        }
         
         if ($conn->query($sql)) {
             echo json_encode(["success" => true]);
@@ -93,7 +115,15 @@ switch ($_SERVER['REQUEST_METHOD']) {
             break;
         }
         
-        $sql = "DELETE FROM clientes WHERE id_cliente=$id";
+        // Verificar si la columna estado existe para hacer eliminación lógica
+        $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
+        if ($check_column->num_rows > 0) {
+            // Eliminación lógica: cambiar estado a false
+            $sql = "UPDATE clientes SET estado = false WHERE id_cliente=$id";
+        } else {
+            // Eliminación física si no existe la columna estado
+            $sql = "DELETE FROM clientes WHERE id_cliente=$id";
+        }
         
         if ($conn->query($sql)) {
             if ($conn->affected_rows > 0) {

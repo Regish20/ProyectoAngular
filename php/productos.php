@@ -18,8 +18,11 @@ if ($conn->connect_error) {
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        // Consulta simple sin JOIN por ahora, para evitar errores si no existe la relación
-        $sql = "SELECT * FROM productos ORDER BY id_producto ASC";
+        // Solo mostrar productos activos (estado = true)
+        $sql = "SELECT p.*, m.nombre_marca FROM productos p 
+                LEFT JOIN marca m ON p.id_marca = m.id_marca 
+                WHERE p.estado = true 
+                ORDER BY p.id_producto ASC";
         
         $resultado = $conn->query($sql);
         if (!$resultado) {
@@ -46,10 +49,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $precio = floatval($data['precio']);
         $stock = intval($data['stock']);
         $descripcion = isset($data['descripcion']) ? $conn->real_escape_string(trim($data['descripcion'])) : '';
+        $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
 
         // Verificar si existe la columna id_marca y si se proporcionó
-        $columns = "nombre, precio, stock";
-        $values = "'$nombre', $precio, $stock";
+        $columns = "nombre, precio, stock, estado";
+        $values = "'$nombre', $precio, $stock, $estado";
         
         if (isset($data['id_marca']) && !empty($data['id_marca'])) {
             $id_marca = intval($data['id_marca']);
@@ -85,8 +89,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $precio = floatval($data['precio']);
         $stock = intval($data['stock']);
         $descripcion = isset($data['descripcion']) ? $conn->real_escape_string(trim($data['descripcion'])) : '';
+        $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
 
-        $sql = "UPDATE productos SET nombre='$nombre', precio=$precio, stock=$stock";
+        $sql = "UPDATE productos SET nombre='$nombre', precio=$precio, stock=$stock, estado=$estado";
         
         if (isset($data['id_marca']) && !empty($data['id_marca'])) {
             $id_marca = intval($data['id_marca']);
@@ -128,7 +133,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             break;
         }
         
-        $sql = "DELETE FROM productos WHERE id_producto=$id";
+        // Eliminación lógica: cambiar estado a false
+        $sql = "UPDATE productos SET estado = false WHERE id_producto=$id";
         
         if ($conn->query($sql)) {
             if ($conn->affected_rows > 0) {

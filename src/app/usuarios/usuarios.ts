@@ -5,6 +5,7 @@ interface Cliente {
   nombre: string;
   correo: string;
   telefono: string;
+  estado: boolean;
 }
 
 interface ApiResponse {
@@ -57,6 +58,7 @@ export class Usuarios implements OnInit {
             <td>${cliente.nombre}</td>
             <td>${cliente.correo}</td>
             <td>${cliente.telefono}</td>
+            <td><span class="badge ${cliente.estado ? 'bg-success' : 'bg-danger'}">${cliente.estado ? 'Activo' : 'Inactivo'}</span></td>
             <td>
               <button class="btn btn-warning btn-sm me-1" onclick="editarClienteGlobal(${cliente.id_cliente})">Editar</button>
               <button class="btn btn-danger btn-sm" onclick="eliminarClienteGlobal(${cliente.id_cliente})">Eliminar</button>
@@ -65,7 +67,7 @@ export class Usuarios implements OnInit {
         `;
       });
     } else {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay clientes</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay clientes</td></tr>';
     }
 
     // Asignar las funciones globales con debugging
@@ -86,8 +88,9 @@ export class Usuarios implements OnInit {
     const nombre = (document.getElementById('nombre') as HTMLInputElement).value.trim();
     const correo = (document.getElementById('correo') as HTMLInputElement).value.trim();
     const telefono = (document.getElementById('telefono') as HTMLInputElement).value.trim();
+    const estado = (document.getElementById('estado') as HTMLSelectElement).value;
     
-    if (!nombre || !correo || !telefono) {
+    if (!nombre || !correo || !telefono || !estado) {
       alert('Todos los campos son obligatorios');
       return;
     }
@@ -96,6 +99,7 @@ export class Usuarios implements OnInit {
       nombre,
       correo,
       telefono,
+      estado,
       ...(this.editandoId && { id_cliente: this.editandoId })
     };
 
@@ -147,6 +151,7 @@ export class Usuarios implements OnInit {
       (document.getElementById('nombre') as HTMLInputElement).value = cliente.nombre;
       (document.getElementById('correo') as HTMLInputElement).value = cliente.correo;
       (document.getElementById('telefono') as HTMLInputElement).value = cliente.telefono;
+      (document.getElementById('estado') as HTMLSelectElement).value = cliente.estado.toString();
       
       // Cambiar textos del formulario
       const submitBtn = document.querySelector('#formUsuario button[type="submit"]') as HTMLElement;
@@ -200,7 +205,7 @@ export class Usuarios implements OnInit {
   private mostrarError(mensaje: string): void {
     const tbody = document.querySelector('table tbody') as HTMLElement;
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${mensaje}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${mensaje}</td></tr>`;
     }
   }
 }
