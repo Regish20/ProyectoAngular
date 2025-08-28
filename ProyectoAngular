@@ -1,0 +1,688 @@
+
+# Proyecto Angular - Tienda Móvil
+
+Sistema de gestión para tienda móvil desarrollado con Angular (frontend) y PHP (backend) con base de datos MySQL.
+
+## 📋 Requisitos del Sistema
+
+### Software necesario:
+- **XAMPP** (versión 7.4 o superior) - Para Apache y MySQL
+- **Node.js** (versión 14 o superior)
+- **Angular CLI** (versión 12 o superior)
+- **Visual Studio Code** (recomendado)
+- **Navegador web** moderno (Chrome, Firefox, Edge)
+
+## 📁 Estructura Completa del Proyecto
+
+```
+PROYECTO/
+├── .angular/                 # Archivos de configuración Angular
+├── .vscode/                  # Configuración de VS Code
+├── node_modules/             # Dependencias de Node.js
+├── php/                      # Backend PHP (API REST)
+│   ├── clientes.php         # CRUD de clientes
+│   ├── conexion.php         # Configuración de BD
+│   ├── marcas.php           # CRUD de marcas
+│   ├── productos.php        # CRUD de productos
+│   └── venta.php            # CRUD de ventas
+├── public/                   # Archivos públicos estáticos
+├── src/                      # Código fuente Angular
+│   ├── app/
+│   │   ├── footer/          # Componente footer
+│   │   │   ├── footer.css
+│   │   │   ├── footer.html
+│   │   │   ├── footer.spec.ts
+│   │   │   └── footer.ts
+│   │   ├── header/          # Componente header
+│   │   │   ├── header.css
+│   │   │   ├── header.html
+│   │   │   ├── header.spec.ts
+│   │   │   └── header.ts
+│   │   ├── inicio/          # Componente página principal
+│   │   │   ├── inicio.css
+│   │   │   ├── inicio.html
+│   │   │   ├── inicio.spec.ts
+│   │   │   └── inicio.ts
+│   │   ├── productos/       # Componente productos
+│   │   │   ├── productos.css
+│   │   │   ├── productos.html
+│   │   │   ├── productos.spec.ts
+│   │   │   └── productos.ts
+│   │   ├── usuarios/        # Componente usuarios/clientes
+│   │   │   ├── usuarios.css
+│   │   │   ├── usuarios.html
+│   │   │   ├── usuarios.spec.ts
+│   │   │   └── usuarios.ts
+│   │   ├── venta/           # Componente ventas
+│   │   │   ├── venta.css
+│   │   │   ├── venta.html
+│   │   │   ├── venta.spec.ts
+│   │   │   └── venta.ts
+│   │   ├── app.config.ts    # Configuración de la app
+│   │   ├── app.css          # Estilos globales del componente
+│   │   ├── app.html         # Template principal
+│   │   ├── app.routes.ts    # Configuración de rutas
+│   │   ├── app.spec.ts      # Tests del componente
+│   │   └── app.ts           # Componente principal
+│   ├── index.html           # HTML principal
+│   ├── main.ts              # Punto de entrada de la aplicación
+│   └── styles.css           # Estilos globales
+├── .editorconfig            # Configuración del editor
+├── .gitignore              # Archivos ignorados por Git
+├── angular.json            # Configuración de Angular
+├── package-lock.json       # Lock de dependencias
+├── package.json            # Dependencias y scripts
+├── README.md               # Este archivo
+├── tsconfig.app.json       # Configuración TypeScript para app
+├── tsconfig.json           # Configuración TypeScript principal
+└── tsconfig.spec.json      # Configuración TypeScript para tests
+```
+
+## 🗄️ Configuración de la Base de Datos
+
+### 1. Crear la Base de Datos
+
+1. Abrir **phpMyAdmin** (http://localhost/phpmyadmin)
+2. Crear una nueva base de datos llamada: `tienda_movil`
+3. Seleccionar la base de datos creada
+4. Ejecutar el comando: `USE tienda_movil;`
+
+### 2. Crear las Tablas (Scripts SQL Completos)
+
+**⚠️ IMPORTANTE:** Ejecuta estos scripts en el orden exacto que aparecen.
+
+#### Tabla `marca` (Primero - es referenciada por productos)
+```sql
+CREATE TABLE marca (
+    id_marca INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_marca VARCHAR(50) NOT NULL,
+    estado TINYINT(1) DEFAULT 1
+);
+```
+
+#### Tabla `productos` (Segundo - referencia a marca)
+```sql
+CREATE TABLE productos (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    precio INT NOT NULL,
+    stock INT NOT NULL DEFAULT 0,
+    descripcion TEXT,
+    id_marca INT,
+    estado TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (id_marca) REFERENCES marca(id_marca) ON DELETE SET NULL
+);
+```
+
+#### Tabla `clientes` (Tercero - es referenciada por venta)
+```sql
+CREATE TABLE clientes (
+    id_cliente INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
+    telefono VARCHAR(20) NOT NULL,
+    estado TINYINT(1) DEFAULT 1
+);
+```
+
+#### Tabla `venta` (Último - referencia a clientes)
+```sql
+CREATE TABLE venta (
+    id_venta INT PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INT NOT NULL,
+    fecha DATETIME NOT NULL,
+    estado TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE
+);
+```
+
+### 3. Datos de Ejemplo (Ejecutar después de crear tablas)
+
+```sql
+-- Insertar marcas de ejemplo
+INSERT INTO marca (nombre_marca, estado) VALUES 
+('Samsung', 1),
+('Apple', 1),
+('Xiaomi', 1),
+('Huawei', 1),
+('Motorola', 1),
+('OnePlus', 1);
+
+-- Insertar clientes de ejemplo
+INSERT INTO clientes (nombre, correo, telefono, estado) VALUES
+('Juan Pérez', 'juan.perez@gmail.com', '987654321', 1),
+('Pedro González', 'pedro.gonzalez@gmail.com', '976543210', 1),
+('José López', 'jose.lopez@gmail.com', '960796504', 1),
+('María García', 'maria.garcia@gmail.com', '954321098', 1),
+('Ana Torres', 'ana.torres@gmail.com', '943210987', 1);
+
+-- Insertar productos de ejemplo
+INSERT INTO productos (nombre, precio, stock, descripcion, id_marca, estado) VALUES
+('Galaxy A10', 320, 15, 'Samsung Galaxy A10 - 32GB, Pantalla 6.2"', 1, 1),
+('iPhone 13', 2500, 8, 'iPhone 13 - 128GB, Pantalla 6.1"', 2, 1),
+('Redmi Note 12', 850, 20, 'Xiaomi Redmi Note 12 - 128GB, Cámara 50MP', 3, 1),
+('P40 Lite', 1200, 12, 'Huawei P40 Lite - 128GB, Kirin 810', 4, 1),
+('Moto G52', 750, 18, 'Motorola Moto G52 - 128GB, Pantalla 6.6"', 5, 1),
+('OnePlus Nord', 1800, 6, 'OnePlus Nord - 256GB, Snapdragon 765G', 6, 1);
+
+-- Insertar ventas de ejemplo
+INSERT INTO venta (id_cliente, fecha, estado) VALUES
+(1, '2024-08-12 10:30:00', 1),
+(3, '2024-08-15 14:45:00', 1),
+(2, '2024-08-18 09:20:00', 1),
+(4, '2024-08-20 16:15:00', 1);
+```
+
+### 4. Verificar la Instalación de la Base de Datos
+
+```sql
+-- Verificar que las tablas se crearon correctamente
+SHOW TABLES;
+
+-- Verificar estructura de cada tabla
+DESCRIBE clientes;
+DESCRIBE marca;
+DESCRIBE productos;
+DESCRIBE venta;
+
+-- Verificar datos insertados
+SELECT * FROM clientes;
+SELECT * FROM marca;
+SELECT * FROM productos;
+SELECT * FROM venta;
+
+-- Consulta con INNER JOIN para verificar relaciones
+SELECT 
+    c.nombre as cliente, 
+    v.fecha,
+    v.id_venta
+FROM clientes c 
+INNER JOIN venta v ON v.id_cliente = c.id_cliente;
+
+SELECT 
+    m.nombre_marca, 
+    p.nombre as producto,
+    p.precio,
+    p.stock
+FROM marca m 
+INNER JOIN productos p ON m.id_marca = p.id_marca;
+```
+
+## 🔧 Configuración del Backend PHP
+
+### 1. Ubicación Exacta de Archivos PHP
+
+**⚠️ CRÍTICO:** La carpeta `php/` debe estar ubicada exactamente en:
+
+**Para XAMPP:**
+```
+C:\xampp\htdocs\PROYECTO\php\
+```
+
+**Para WAMP:**
+```
+C:\wamp64\www\PROYECTO\php\
+```
+
+**Para MAMP (Mac):**
+```
+/Applications/MAMP/htdocs/PROYECTO/php/
+```
+
+**Para LAMP (Linux):**
+```
+/var/www/html/PROYECTO/php/
+```
+
+### 2. Estructura de Archivos PHP
+```
+htdocs/PROYECTO/php/
+├── conexion.php     # Conexión a la base de datos
+├── clientes.php     # API REST para clientes
+├── marcas.php       # API REST para marcas
+├── productos.php    # API REST para productos
+└── venta.php        # API REST para ventas
+```
+
+### 3. Configurar Conexión a Base de Datos
+
+Editar el archivo `php/conexion.php`:
+
+```php
+<?php
+$host = "localhost";
+$usuario = "root";
+$contrasena = ""; // Cambiar por tu contraseña si tienes una
+$base_datos = "tienda_movil"; 
+
+$conn = new mysqli($host, $usuario, $contrasena, $base_datos);
+
+// Configurar charset para caracteres especiales
+$conn->set_charset("utf8");
+
+if ($conn->connect_error) {
+    die("Error de conexión: " . $conn->connect_error);
+}
+?>
+```
+
+**📝 Configuraciones especiales:**
+- Si MySQL usa puerto diferente: `$host = "localhost:3307";`
+- Si tienes contraseña en MySQL: cambiar `$contrasena = "tu_password";`
+- Si el servidor no es local: cambiar `$host = "tu_servidor.com";`
+
+## 🚀 Configuración del Frontend Angular
+
+### 1. Verificar Instalaciones Previas
+
+```bash
+# Verificar Node.js
+node --version
+# Debe mostrar versión 14 o superior
+
+# Verificar npm
+npm --version
+# Debe mostrar versión 6 o superior
+
+# Verificar Angular CLI
+ng version
+# Si no existe, instalar:
+npm install -g @angular/cli
+```
+
+### 2. Instalar Dependencias del Proyecto
+
+```bash
+# Navegar al directorio raíz del proyecto (donde está package.json)
+cd ruta/completa/al/PROYECTO
+
+# Instalar todas las dependencias
+npm install
+
+# Si hay errores de dependencias:
+npm install --force
+
+# Si hay problemas de permisos (Linux/Mac):
+sudo npm install
+```
+
+### 3. Verificar Configuración Angular (El código ya está listo)
+
+El proyecto Angular ya está completamente desarrollado con:
+
+- **Componentes:** Header, Footer, Inicio, Productos, Usuarios, Venta
+- **Rutas configuradas:** `/inicio`, `/productos`, `/usuarios`, `/venta`
+- **API URLs configuradas:** Apuntan a `http://localhost/PROYECTO/PROYECTO_FINAL/PROYECTO_FINAL/php/`
+- **Interfaces TypeScript:** Para tipado de datos
+- **CRUD completo:** Crear, leer, actualizar y eliminar registros
+
+**⚠️ IMPORTANTE:** Solo necesitas ajustar la URL de la API si tu estructura de carpetas es diferente.
+
+En cada componente, busca la línea similar a:
+```typescript
+private readonly API_URL = 'http://localhost/PROYECTO/PROYECTO_FINAL/PROYECTO_FINAL/php/archivo.php';
+```
+
+Y ajústala a tu estructura:
+```typescript
+private readonly API_URL = 'http://localhost/TU_CARPETA/php/archivo.php';
+```
+
+## 🏃‍♂️ Pasos para Ejecutar el Proyecto
+
+### 1. Iniciar Servicios del Servidor
+
+1. **Abrir XAMPP Control Panel**
+2. **Iniciar Apache** (hacer clic en "Start")
+3. **Iniciar MySQL** (hacer clic en "Start")
+4. Verificar que ambos servicios muestren estado "Running" en verde
+
+### 2. Verificar Backend PHP
+
+Probar los siguientes endpoints en el navegador (deben retornar JSON):
+
+```
+http://localhost/PROYECTO/php/clientes.php
+http://localhost/PROYECTO/php/marcas.php
+http://localhost/PROYECTO/php/productos.php
+http://localhost/PROYECTO/php/venta.php
+```
+
+**Resultado esperado:** JSON con datos o array vacío `[]`
+
+### 3. Ejecutar Frontend Angular
+
+```bash
+# En el directorio raíz del proyecto (donde está package.json)
+cd ruta/completa/al/PROYECTO
+
+# Ejecutar el servidor de desarrollo
+ng serve
+
+# Con puerto específico (opcional)
+ng serve --port 4200
+
+# Para abrir automáticamente en el navegador
+ng serve --open
+```
+
+**Salida esperada:**
+```
+✔ Browser application bundle generation complete.
+
+Initial Chunk Files | Names         |  Raw Size
+vendor.js           | vendor        |   2.05 MB | 
+main.js             | main          | 289.56 kB | 
+runtime.js          | runtime       |  12.64 kB | 
+polyfills.js        | polyfills     |  33.06 kB | 
+styles.css          | styles        | 179.98 kB | 
+
+                    | Initial Total |   2.56 MB
+
+Build at: 2024-01-XX - Hash: XXXXXXXXX
+** Angular Live Development Server is listening on localhost:4200 **
+```
+
+### 4. Acceder a la Aplicación
+
+- **Frontend Angular:** http://localhost:4200
+- **Backend PHP API:** http://localhost/PROYECTO/php/
+
+## 🔍 Pruebas de Funcionalidad
+
+### Verificar Endpoints con Navegador
+
+**Copiar y pegar estas URLs en el navegador:**
+
+```bash
+# Obtener todos los clientes
+http://localhost/PROYECTO/php/clientes.php
+
+# Obtener todas las marcas
+http://localhost/PROYECTO/php/marcas.php
+
+# Obtener todos los productos
+http://localhost/PROYECTO/php/productos.php
+
+# Obtener todas las ventas
+http://localhost/PROYECTO/php/venta.php
+```
+
+### Pruebas con Postman (Opcional)
+
+**Crear Cliente (POST):**
+```
+URL: http://localhost/PROYECTO/php/clientes.php
+Method: POST
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+    "nombre": "Test Usuario",
+    "correo": "test@email.com",
+    "telefono": "999888777"
+}
+```
+
+**Crear Marca (POST):**
+```
+URL: http://localhost/PROYECTO/php/marcas.php
+Method: POST
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+    "nombre_marca": "Test Marca"
+}
+```
+
+**Crear Producto (POST):**
+```
+URL: http://localhost/PROYECTO/php/productos.php
+Method: POST
+Headers: Content-Type: application/json
+Body (raw JSON):
+{
+    "nombre": "Test Producto",
+    "precio": 500,
+    "stock": 10,
+    "id_marca": 1,
+    "descripcion": "Producto de prueba"
+}
+```
+
+## 🛠️ Solución de Problemas Comunes
+
+### ❌ Error: "Access to fetch has been blocked by CORS policy"
+**Causa:** Problemas de CORS entre Angular y PHP
+**Solución:**
+1. Verificar que todos los archivos PHP tengan los headers CORS:
+```php
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+```
+2. Reiniciar Apache en XAMPP
+
+### ❌ Error: "Connection failed: Access denied for user 'root'"
+**Causas posibles:**
+- MySQL no está corriendo
+- Contraseña incorrecta
+**Soluciones:**
+1. Verificar que MySQL esté corriendo en XAMPP (botón Start)
+2. Cambiar contraseña en `conexion.php`
+3. Resetear contraseña de MySQL:
+   - Ir a phpMyAdmin
+   - Cuentas de usuario → root → Cambiar contraseña
+
+### ❌ Error: "Unknown database 'tienda_movil'"
+**Solución:**
+1. Ir a phpMyAdmin (http://localhost/phpmyadmin)
+2. Crear base de datos `tienda_movil`
+3. Ejecutar scripts SQL de creación de tablas
+
+### ❌ Error: "ng: command not found"
+**Solución:**
+```bash
+# Instalar Angular CLI globalmente
+npm install -g @angular/cli
+
+# Verificar instalación
+ng version
+```
+
+### ❌ Error: Puerto 4200 ocupado
+**Solución:**
+```bash
+# Usar otro puerto
+ng serve --port 4201
+
+# Ver qué está usando el puerto (Windows)
+netstat -ano | findstr :4200
+
+# Ver qué está usando el puerto (Linux/Mac)
+lsof -ti:4200
+```
+
+### ❌ Los archivos PHP muestran código en lugar de ejecutarse
+**Causas:**
+- Apache no está corriendo
+- Archivos no están en htdocs
+- Acceso directo al archivo (file://)
+**Soluciones:**
+1. Verificar que Apache esté corriendo en XAMPP
+2. Confirmar ruta: `C:\xampp\htdocs\PROYECTO\php\`
+3. Acceder con `http://localhost/` no `file://`
+
+### ❌ Error 404 en endpoints PHP
+**Verificar:**
+1. Ruta correcta: `http://localhost/PROYECTO/php/archivo.php`
+2. Archivos PHP en htdocs/PROYECTO/php/
+3. Apache corriendo
+4. Nombres de archivos correctos (case-sensitive en Linux)
+
+### ❌ Error: "npm ERR! code EACCES" (Linux/Mac)
+**Solución:**
+```bash
+sudo npm install
+# O configurar npm para no usar sudo
+npm config set prefix ~/.npm-global
+```
+
+### ❌ Angular no conecta con PHP
+**Verificar:**
+1. URLs en servicios Angular: `http://localhost/PROYECTO/php/`
+2. CORS habilitado en archivos PHP
+3. Ambos servidores corriendo (Angular en :4200, Apache en :80)
+4. No usar HTTPS en desarrollo
+
+## 📊 Estructura de la Base de Datos
+
+### Relaciones:
+- `productos.id_marca` → `marca.id_marca` (Muchos a Uno)
+- `venta.id_cliente` → `clientes.id_cliente` (Muchos a Uno)
+
+### Campos Obligatorios por Tabla:
+
+**clientes:**
+- `nombre` (VARCHAR 100)
+- `correo` (VARCHAR 100, ÚNICO)
+- `telefono` (VARCHAR 20)
+
+**marca:**
+- `nombre_marca` (VARCHAR 50)
+
+**productos:**
+- `nombre` (VARCHAR 100)
+- `precio` (INT)
+- `stock` (INT)
+- `id_marca` (INT, opcional)
+
+**venta:**
+- `id_cliente` (INT)
+- `fecha` (DATETIME)
+
+### Estados de Registros:
+- `1` = Activo (se muestra)
+- `0` = Inactivo (eliminado lógicamente)
+- Sistema de eliminación lógica implementado
+
+## 🚀 Comandos Útiles para Desarrollo
+
+### Angular:
+```bash
+# Generar nuevo componente
+ng generate component nombre-componente
+
+# Generar servicio
+ng generate service services/nombre-servicio
+
+# Compilar para producción
+ng build --prod
+
+# Ejecutar tests
+ng test
+
+# Ver ayuda de comandos
+ng help
+```
+
+### npm:
+```bash
+# Instalar paquete específico
+npm install nombre-paquete
+
+# Actualizar dependencias
+npm update
+
+# Ver dependencias instaladas
+npm list
+
+# Limpiar caché
+npm cache clean --force
+
+# Ver información del proyecto
+npm info
+```
+
+### MySQL (desde línea de comandos):
+```bash
+# Conectar a MySQL
+mysql -u root -p
+
+# Mostrar bases de datos
+SHOW DATABASES;
+
+# Usar base de datos
+USE tienda_movil;
+
+# Mostrar tablas
+SHOW TABLES;
+```
+
+## 📞 Checklist de Instalación Completa
+
+**Requisitos del Sistema:**
+- [ ] ✅ XAMPP descargado e instalado
+- [ ] ✅ Node.js instalado (verificar con `node --version`)
+- [ ] ✅ Angular CLI instalado (verificar con `ng version`)
+
+**Base de Datos:**
+- [ ] ✅ MySQL corriendo en XAMPP
+- [ ] ✅ Base de datos `tienda_movil` creada
+- [ ] ✅ Tabla `marca` creada con datos de ejemplo
+- [ ] ✅ Tabla `clientes` creada con datos de ejemplo
+- [ ] ✅ Tabla `productos` creada con datos de ejemplo
+- [ ] ✅ Tabla `venta` creada con datos de ejemplo
+- [ ] ✅ Relaciones entre tablas funcionando
+
+**Backend PHP:**
+- [ ] ✅ Apache corriendo en XAMPP
+- [ ] ✅ Carpeta `php/` en `htdocs/PROYECTO/php/`
+- [ ] ✅ Archivo `conexion.php` configurado correctamente
+- [ ] ✅ Endpoints retornando JSON correctamente:
+  - [ ] `http://localhost/PROYECTO/php/clientes.php`
+  - [ ] `http://localhost/PROYECTO/php/marcas.php`
+  - [ ] `http://localhost/PROYECTO/php/productos.php`
+  - [ ] `http://localhost/PROYECTO/php/venta.php`
+
+**Frontend Angular:**
+- [ ] ✅ Dependencias instaladas (`npm install` sin errores)
+- [ ] ✅ Servidor Angular corriendo (`ng serve` sin errores)
+- [ ] ✅ Aplicación accesible en http://localhost:4200
+- [ ] ✅ Servicios configurados con URLs correctas
+- [ ] ✅ HttpClient configurado en app.config.ts
+
+**Pruebas de Integración:**
+- [ ] ✅ Frontend se conecta correctamente con Backend
+- [ ] ✅ CRUD de clientes funcionando
+- [ ] ✅ CRUD de marcas funcionando
+- [ ] ✅ CRUD de productos funcionando
+- [ ] ✅ CRUD de ventas funcionando
+- [ ] ✅ No hay errores de CORS en consola del navegador
+
+---
+
+## 🎉 ¡Proyecto Listo!
+
+Si todos los elementos del checklist están marcados, tu **Proyecto Angular - Tienda Móvil** está completamente configurado y funcional.
+
+**🌟 Características del Sistema:**
+- Frontend moderno con Angular
+- API REST con PHP
+- Base de datos MySQL relacional
+- Sistema de eliminación lógica
+- CORS habilitado
+- Estructura modular y escalable
+
+**💡 Próximos pasos sugeridos:**
+- Implementar autenticación de usuarios
+- Agregar validaciones avanzadas en formularios
+- Implementar paginación en listados
+- Agregar sistema de reportes
+- Optimizar consultas de base de datos
+
+- Agregar validaciones avanzadas en formularios
+- Implementar paginación en listados
+- Agregar sistema de reportes
+- Optimizar consultas de base de datos
+
+**📱 Contacto:** Para soporte técnico, revisar la sección de solución de problemas o consultar documentación oficial de Angular y PHP.
