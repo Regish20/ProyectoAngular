@@ -18,13 +18,10 @@ if ($conn->connect_error) {
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        // Verificar si la columna estado existe
         $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
         if ($check_column->num_rows > 0) {
-            // Solo mostrar clientes activos (estado = true)
             $resultado = $conn->query("SELECT * FROM clientes WHERE estado = true ORDER BY id_cliente ASC");
         } else {
-            // Si no existe la columna estado, mostrar todos
             $resultado = $conn->query("SELECT * FROM clientes ORDER BY id_cliente ASC");
         }
         if (!$resultado) {
@@ -51,7 +48,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $correo = $conn->real_escape_string(trim($data['correo']));
         $telefono = $conn->real_escape_string(trim($data['telefono']));
         
-        // Verificar si la columna estado existe
         $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
         if ($check_column->num_rows > 0) {
             $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
@@ -81,7 +77,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         $correo = $conn->real_escape_string(trim($data['correo']));
         $telefono = $conn->real_escape_string(trim($data['telefono']));
         
-        // Verificar si la columna estado existe
         $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
         if ($check_column->num_rows > 0) {
             $estado = isset($data['estado']) ? ($data['estado'] === 'true' || $data['estado'] === true ? 1 : 0) : 1;
@@ -98,10 +93,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 
     case 'DELETE':
-        // Intentar obtener ID desde URL primero
+
         $id = isset($_GET['id_cliente']) ? intval($_GET['id_cliente']) : 0;
         
-        // Si no hay ID en URL, intentar desde body
         if ($id == 0) {
             $input = file_get_contents("php://input");
             if ($input) {
@@ -114,15 +108,14 @@ switch ($_SERVER['REQUEST_METHOD']) {
             echo json_encode(["success" => false, "error" => "ID de cliente no válido"]);
             break;
         }
-        
-        // Verificar si la columna estado existe para hacer eliminación lógica
+
         $check_column = $conn->query("SHOW COLUMNS FROM clientes LIKE 'estado'");
         if ($check_column->num_rows > 0) {
-            // Eliminación lógica: cambiar estado a false
+     
             $sql = "UPDATE clientes SET estado = false WHERE id_cliente=$id";
         } else {
-            // Eliminación física si no existe la columna estado
-            $sql = "DELETE FROM clientes WHERE id_cliente=$id";
+            echo json_encode(["success" => false, "error" => "La columna 'estado' no existe. No se puede realizar eliminación lógica."]);
+            break;
         }
         
         if ($conn->query($sql)) {

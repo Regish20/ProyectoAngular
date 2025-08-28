@@ -45,13 +45,9 @@ export class Usuarios implements OnInit {
     const tbody = document.querySelector('table tbody') as HTMLElement;
     if (!tbody) return;
 
-    console.log('=== ACTUALIZANDO TABLA ===');
-    console.log('Clientes disponibles:', this.clientes);
-
     tbody.innerHTML = '';
     if (this.clientes.length > 0) {
       this.clientes.forEach(cliente => {
-        console.log('Procesando cliente:', cliente);
         tbody.innerHTML += `
           <tr>
             <td>${cliente.id_cliente}</td>
@@ -70,21 +66,13 @@ export class Usuarios implements OnInit {
       tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay clientes</td></tr>';
     }
 
-    // Asignar las funciones globales con debugging
-    (window as any).editarClienteGlobal = (id: number) => {
-      console.log('=== FUNCIÓN GLOBAL EDITARCLIENTE LLAMADA ===');
-      console.log('ID recibido en función global:', id, typeof id);
-      this.editarCliente(id);
-    };
+    (window as any).editarClienteGlobal = (id: number) => this.editarCliente(id);
     (window as any).eliminarClienteGlobal = (id: number) => this.eliminarCliente(id);
-    
-    console.log('Funciones globales asignadas');
   }
 
   async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
     
-    // Obtener valores directamente de los inputs
     const nombre = (document.getElementById('nombre') as HTMLInputElement).value.trim();
     const correo = (document.getElementById('correo') as HTMLInputElement).value.trim();
     const telefono = (document.getElementById('telefono') as HTMLInputElement).value.trim();
@@ -106,8 +94,6 @@ export class Usuarios implements OnInit {
     const metodo = this.editandoId ? 'PUT' : 'POST';
 
     try {
-      console.log('Enviando datos:', datos); // Para debugging
-      
       const respuesta = await fetch(this.API_URL, {
         method: metodo,
         headers: { 'Content-Type': 'application/json' },
@@ -115,7 +101,6 @@ export class Usuarios implements OnInit {
       });
 
       const resultado: ApiResponse = await respuesta.json();
-      console.log('Resultado:', resultado); // Para debugging
       
       if (resultado.success) {
         alert(this.editandoId ? 'Cliente actualizado' : 'Cliente registrado');
@@ -131,48 +116,27 @@ export class Usuarios implements OnInit {
   }
 
   async editarCliente(id: number | string): Promise<void> {
-    console.log('=== INICIANDO EDITAR CLIENTE ===');
-    console.log('ID recibido:', id, 'tipo:', typeof id);
-    
-    // Convertir AMBOS a número para asegurar comparación correcta
-    const clienteId = Number(id); // Usar Number() en lugar de parseInt()
-    console.log('ID convertido:', clienteId, 'tipo:', typeof clienteId);
-    
-    const cliente = this.clientes.find(c => {
-      const clienteIdEnArray = Number(c.id_cliente); // También convertir el del array
-      console.log('Comparando:', clienteIdEnArray, '===', clienteId, '?', clienteIdEnArray === clienteId);
-      return clienteIdEnArray === clienteId;
-    });
-    
-    console.log('Cliente encontrado:', cliente);
+    const clienteId = Number(id);
+    const cliente = this.clientes.find(c => Number(c.id_cliente) === clienteId);
     
     if (cliente) {
-      // Llenar los campos del formulario
       (document.getElementById('nombre') as HTMLInputElement).value = cliente.nombre;
       (document.getElementById('correo') as HTMLInputElement).value = cliente.correo;
       (document.getElementById('telefono') as HTMLInputElement).value = cliente.telefono;
       (document.getElementById('estado') as HTMLSelectElement).value = cliente.estado.toString();
       
-      // Cambiar textos del formulario
       const submitBtn = document.querySelector('#formUsuario button[type="submit"]') as HTMLElement;
-      const cardHeaders = document.querySelectorAll('.card-header');
+      const cardHeader = document.querySelector('.card-header') as HTMLElement;
       const cancelBtn = document.getElementById('btnCancelar') as HTMLElement;
       
       if (submitBtn) submitBtn.textContent = 'Actualizar usuario';
-      if (cardHeaders && cardHeaders.length > 0) {
-        (cardHeaders[0] as HTMLElement).textContent = 'Editar usuario';
-      }
+      if (cardHeader) cardHeader.textContent = 'Editar usuario';
       if (cancelBtn) cancelBtn.style.display = 'inline-block';
       
       this.editandoId = clienteId;
-      
-      console.log('Cliente editado exitosamente:', cliente.nombre);
-      alert('Modo edición activado para: ' + cliente.nombre); // Para confirmar que funcionó
     } else {
-      console.log('ERROR: Cliente no encontrado');
       alert('Cliente no encontrado');
     }
-    console.log('=== FIN EDITAR CLIENTE ===');
   }
 
   async eliminarCliente(id: number): Promise<void> {

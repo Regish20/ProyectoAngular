@@ -44,18 +44,15 @@ export class Venta implements OnInit {
     const tbody = document.querySelector('table tbody') as HTMLElement;
     if (!tbody) return;
 
-    console.log('=== ACTUALIZANDO TABLA ===');
-    console.log('Ventas disponibles:', this.ventas);
-
     tbody.innerHTML = '';
     if (this.ventas.length > 0) {
       this.ventas.forEach(venta => {
-        console.log('Procesando venta:', venta);
+        const fechaFormateada = this.formatearFechaParaMostrar(venta.fecha);
         tbody.innerHTML += `
           <tr>
             <td>${venta.id_venta}</td>
             <td>${venta.id_cliente}</td>
-            <td>${venta.fecha}</td>
+            <td>${fechaFormateada}</td>
             <td><span class="badge ${venta.estado ? 'bg-success' : 'bg-danger'}">${venta.estado ? 'Activo' : 'Inactivo'}</span></td>
             <td>
               <button class="btn btn-warning btn-sm me-1" onclick="editarVentaGlobal(${venta.id_venta})">Editar</button>
@@ -68,33 +65,73 @@ export class Venta implements OnInit {
       tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay ventas</td></tr>';
     }
 
-    // Asignar las funciones globales con debugging
-    (window as any).editarVentaGlobal = (id: number) => {
-      console.log('=== FUNCIÓN GLOBAL EDITARVENTA LLAMADA ===');
-      console.log('ID recibido en función global:', id, typeof id);
-      this.editarVenta(id);
-    };
+    (window as any).editarVentaGlobal = (id: number) => this.editarVenta(id);
     (window as any).eliminarVentaGlobal = (id: number) => this.eliminarVenta(id);
+  }
+
+  private formatearFechaParaMostrar(fecha: string): string {
+    try {
+      const fechaObj = new Date(fecha);
+      return fechaObj.toLocaleString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch (error) {
+      return fecha;
+    }
+  }
+
+  private formatearFechaParaEnvio(fechaDatetimeLocal: string): string {
+    if (!fechaDatetimeLocal) return '';
     
-    console.log('Funciones globales asignadas');
+    let fechaFormateada = fechaDatetimeLocal;
+    if (!fechaFormateada.includes(':00')) {
+      fechaFormateada += ':00';
+    }
+    
+    return fechaFormateada.replace('T', ' ');
+  }
+
+  private formatearFechaParaInput(fechaMySQL: string): string {
+    if (!fechaMySQL) return '';
+    
+    try {
+      const fechaSinMilisegundos = fechaMySQL.split('.')[0];
+      const partes = fechaSinMilisegundos.split(' ');
+      if (partes.length === 2) {
+        const fecha = partes[0];
+        const horaPartes = partes[1].split(':');
+        const horaMinutos = `${horaPartes[0]}:${horaPartes[1]}`;
+        return `${fecha}T${horaMinutos}`;
+      }
+      
+      return fechaSinMilisegundos.replace(' ', 'T');
+    } catch (error) {
+      return '';
+    }
   }
 
   async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
     
-    // Obtener valores directamente de los inputs
     const id_cliente = (document.getElementById('id_cliente') as HTMLInputElement).value.trim();
-    const fecha = (document.getElementById('fecha') as HTMLInputElement).value.trim();
+    const fechaDatetimeLocal = (document.getElementById('fecha') as HTMLInputElement).value.trim();
     const estado = (document.getElementById('estado') as HTMLSelectElement).value;
     
-    if (!id_cliente || !fecha || !estado) {
+    if (!id_cliente || !fechaDatetimeLocal || !estado) {
       alert('Todos los campos son obligatorios');
       return;
     }
     
+    const fechaParaEnvio = this.formatearFechaParaEnvio(fechaDatetimeLocal);
+    
     const datos = {
       id_cliente: parseInt(id_cliente),
-      fecha,
+      fecha: fechaParaEnvio,
       estado,
       ...(this.editandoId && { id_venta: this.editandoId })
     };
@@ -102,8 +139,6 @@ export class Venta implements OnInit {
     const metodo = this.editandoId ? 'PUT' : 'POST';
 
     try {
-      console.log('Enviando datos:', datos); // Para debugging
-      
       const respuesta = await fetch(this.API_URL, {
         method: metodo,
         headers: { 'Content-Type': 'application/json' },
@@ -111,7 +146,6 @@ export class Venta implements OnInit {
       });
 
       const resultado: ApiResponse = await respuesta.json();
-      console.log('Resultado:', resultado); // Para debugging
       
       if (resultado.success) {
         alert(this.editandoId ? 'Venta actualizada' : 'Venta registrada');
@@ -127,47 +161,26 @@ export class Venta implements OnInit {
   }
 
   async editarVenta(id: number | string): Promise<void> {
-    console.log('=== INICIANDO EDITAR VENTA ===');
-    console.log('ID recibido:', id, 'tipo:', typeof id);
-    
-    // Convertir AMBOS a número para asegurar comparación correcta
-    const ventaId = Number(id); // Usar Number() en lugar de parseInt()
-    console.log('ID convertido:', ventaId, 'tipo:', typeof ventaId);
-    
-    const venta = this.ventas.find(v => {
-      const ventaIdEnArray = Number(v.id_venta); // También convertir el del array
-      console.log('Comparando:', ventaIdEnArray, '===', ventaId, '?', ventaIdEnArray === ventaId);
-      return ventaIdEnArray === ventaId;
-    });
-    
-    console.log('Venta encontrada:', venta);
+    const ventaId = Number(id);
+    const venta = this.ventas.find(v => Number(v.id_venta) === ventaId);
     
     if (venta) {
-      // Llenar los campos del formulario
       (document.getElementById('id_cliente') as HTMLInputElement).value = venta.id_cliente.toString();
-      (document.getElementById('fecha') as HTMLInputElement).value = venta.fecha;
+      (document.getElementById('fecha') as HTMLInputElement).value = this.formatearFechaParaInput(venta.fecha);
       (document.getElementById('estado') as HTMLSelectElement).value = venta.estado.toString();
       
-      // Cambiar textos del formulario
       const submitBtn = document.querySelector('#formVenta button[type="submit"]') as HTMLElement;
-      const cardHeaders = document.querySelectorAll('.card-header');
+      const cardHeader = document.querySelector('.card-header') as HTMLElement;
       const cancelBtn = document.getElementById('btnCancelar') as HTMLElement;
       
       if (submitBtn) submitBtn.textContent = 'Actualizar venta';
-      if (cardHeaders && cardHeaders.length > 0) {
-        (cardHeaders[0] as HTMLElement).textContent = 'Editar venta';
-      }
+      if (cardHeader) cardHeader.textContent = 'Editar venta';
       if (cancelBtn) cancelBtn.style.display = 'inline-block';
       
       this.editandoId = ventaId;
-      
-      console.log('Venta editada exitosamente:', venta.id_venta);
-      alert('Modo edición activado para venta ID: ' + venta.id_venta); // Para confirmar que funcionó
     } else {
-      console.log('ERROR: Venta no encontrada');
       alert('Venta no encontrada');
     }
-    console.log('=== FIN EDITAR VENTA ===');
   }
 
   async eliminarVenta(id: number): Promise<void> {
